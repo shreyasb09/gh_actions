@@ -130,7 +130,8 @@ dept_stack = {
                 ],
             "NPIE/PIE": [
                 {"stack":"aws-aps1-iota-qa101","owner":"gavi@amagi.com","description":"LTS testing"}, 
-                {"stack":"aws-aps1-iota-qapvm","owner":"gavi@amagi.com","description":"CRR Grafana"}
+                {"stack":"aws-aps1-iota-qapvm","owner":"gavi@amagi.com","description":"CRR Grafana"},
+		{"stack":"aws-aps1-iota-qapvm","owner":"gavi@amagi.com","description":"CRR Grafana"}
                 ],    
             "common": [
                 {"stack":"qa-common","owner":"goutham.bs@amagi.com","description":"standalone ec2 instances for live input source"},
