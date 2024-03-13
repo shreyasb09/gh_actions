@@ -194,7 +194,8 @@ dept_stack = {
 		{"stack":"aws-aps1-iota-cauto","owner":"ronak.kogta@amagi.com","description":"Used as testing environment for karpenter"},
 		{"stack":"aws-aps1-iota-cpkar","owner":"ronak.kogta@amagi.com","description":"Used as testing environment for karpenter"},
 		{"stack":"aws-as1-iota-pssg","owner":"ronak.kogta@amagi.com","description":"Stack used for testing prometheus discovery mechanism changes for player metrics | Used as testing environment for karpenter"},
-		{"stack":"aws-as1-iota-proup","owner":"pranchal.sihare@amagi.com","description":"Stack used for testing changes in platform resources"}
+		{"stack":"aws-as1-iota-proup","owner":"pranchal.sihare@amagi.com","description":"Stack used for testing changes in platform resources"},
+		{}
             ],            
             "amgctl-clusters": [{"stack":"aws-aps1-iota-gmapb","owner":"sekhar@amagi.com","description":"Devqa & Dev gamma"},{"stack":"aws-aps1-iota-gmapb-ds","owner":"sekhar@amagi.com","description":"Devqa & Dev gamma"}],
             "prod_upgrade": [
