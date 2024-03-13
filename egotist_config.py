@@ -263,5 +263,7 @@ dept_stack = {
 	  ]
 	}
     },
+	                {"stack":"vpn_creation","owner":"md.ansari@amagi.com","description":"pritunl vpn server"},
+
 }
 
