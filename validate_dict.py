@@ -37,7 +37,7 @@ else:
     
 
 def main():
-    with open('config.py', 'r') as file:
+    with open('egotist_config.py', 'r') as file:
         data = file.read()
         # Extract the dictionary from the Python script
         dictionary_str = data[data.find('{'):]
