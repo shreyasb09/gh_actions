@@ -1,38 +1,51 @@
 import yaml
 import egotist_config
 
-#test
-def validate_dictionary(dictionary):
-    if not isinstance(dictionary, dict):
-        return False
 
-    expected_keys = ["gamma", "alpha", "beta", "sigma", "theta", "omega", "lambda", "iota"]
-    if not set(expected_keys) == set(dictionary.keys()):
-        return False
+def validate_dept_stack(dept_stack):
+    valid_keys = set(["gamma", "alpha", "beta", "sigma", "theta", "omega", "lambda", "iota"])
 
-    # Check if each sub-dictionary follows the expected structure
-    for team, team_dict in dictionary.items():
-        if not isinstance(team_dict, dict):
+    for dept, teams in dept_stack.items():
+        if dept not in valid_keys:
+            print(f"Error: '{dept}' department is not a valid key in the dictionary.")
             return False
-        for department, department_dict in team_dict.items():
-            if not isinstance(department_dict, dict):
+        
+        if not isinstance(teams, dict):
+            print(f"Invalid data type for '{dept}' department: expected dictionary.")
+            return False
+        
+        for team, categories in teams.items():
+            if not isinstance(categories, dict):
+                print(f"Invalid data type for '{team}' team in '{dept}' department: expected dictionary.")
                 return False
-            for subgroup, subgroup_list in department_dict.items():
-                if not isinstance(subgroup_list, list):
+            
+            for category, stacks in categories.items():
+                if not isinstance(stacks, list):
+                    print(f"Invalid data type for '{category}' category in '{team}' team of '{dept}' department: expected list.")
                     return False
-                for item in subgroup_list:
-                    if not isinstance(item, dict):
+                
+                for stack in stacks:
+                    if not isinstance(stack, dict):
+                        print(f"Invalid data type for stack entry in '{category}' category of '{team}' team in '{dept}' department: expected dictionary.")
                         return False
-                    if not all(key in item for key in ["stack", "owner", "description"]):
+                    
+                    if not all(key in stack for key in ("stack", "owner", "description")):
+                        print(f"Missing keys in stack entry in '{category}' category of '{team}' team in '{dept}' department.")
                         return False
-    
+                    
+                    if not all(isinstance(value, str) for value in stack.values()):
+                        print(f"Invalid data type for values in stack entry in '{category}' category of '{team}' team in '{dept}' department: expected strings.")
+                        return False
+                    
+    print("Dictionary validation successful: All entries are valid.")
     return True
 
-
-if validate_dictionary(egotist_config.dept_stack):
+# Validate the dictionary
+if validate_dept_stack(egotist_config.dept_stack):
     print("Dictionary is valid.")
 else:
     print("Dictionary is not valid.")
+
 
     
 
@@ -48,7 +61,7 @@ def main():
         # Validate the dictionary
         if validate_dictionary(dept_stack):
             print("Dictionary syntax is valid")
-            exit(0)  # Success exit code
+            exit(0) 
         else:
             print("Dictionary syntax is invalid")
             exit(1)  # Failure exit code
