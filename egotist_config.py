@@ -260,6 +260,7 @@ dept_stack = {
 		{"stack":"chartmuseum-iota-test","owner":"md.ansari@amagi.com","description":"chartmuseum hosted on ec2"},
 		{"stack":"iota-mumbai-common-env","owner":"ieg-platform+common@amagi.com","description":"IEG-CP Managed common infrastructure"},
                 {"stack":"vpn_creation","owner":"md.ansari@amagi.com","description":"pritunl vpn server"},
+		{"stack":"aws-use1-beta-qa7","owner":"gavi@amagi.com","description":"Stand alone setup resources"}
 	  ]
 	}
     },
