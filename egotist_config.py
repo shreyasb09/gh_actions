@@ -11,7 +11,7 @@ dept_stack = {
                 {"stack":"aws-aps1-iota-test1-ds","owner":"sekhar@amagi.com","description":""},
                 {"stack":"aws-aps1-gamma-intcp","owner":"karthik.v@amagi.com","description":"cp development intel setup"},
                 {"stack":"aws-aps1-iota-test1","owner":"sekhar@amagi.com","description":""},
-                {"stack":"aws-aps1-gamma-common","owner":"ashutosh.mittal@amagi.com","description":"deployment servers"}
+                {"stack":"aws-aps1-gamma-common","owner":"ashutosh.mittal@amagi.com","description":"deployment servers for testing"}
             ],
             "mapsor": [ {"stack":"mapsor-compute-mumbai","owner":"veeranjaneyulu.m@amagi.com","description":"mapsor"}],
             "customisation": [{"stack":"aws-aps1-gamma-custo","owner":"vinayagar@amagi.com","description":"cp development setup for customization team"}]
