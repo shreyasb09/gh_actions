@@ -1,5 +1,5 @@
 import yaml
-from .gh_actions import egotist_config
+import egotist_config
 
 #test
 def validate_dictionary(dictionary):
