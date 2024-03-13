@@ -59,7 +59,7 @@ def main():
         dept_stack = eval(dictionary_str)
 
         # Validate the dictionary
-        if validate_dictionary(dept_stack):
+        if validate_dept_stack(dept_stack):
             print("Dictionary syntax is valid")
             exit(0) 
         else:
