@@ -122,6 +122,7 @@ dept_stack = {
             "crr": [
                 {"stack":"aws-aps1-iota-sind3","owner":"chaduvula.akhil@amagi.com","description":"CRR QA Setup"},
                 {"stack":"aws-apse1-iota-sind4","owner":"chaduvula.akhil@amagi.com","description":"CRR QA Setup"}
+		{"stack":"aws-apse1-iota-sind4","owner:"chaduvula.akhil@amagi.com","description":"CRR QA Setup"}
             ],
             "bolt": [
                 {"stack":"aws-use1-iota-pblt1","owner":"hema.upadhayay@amagi.com","description":"Bolt Testing"}, 
