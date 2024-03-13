@@ -263,5 +263,6 @@ dept_stack = {
 	  ]
 	}
     },
+	{"stack":"aws-as1-iota-qa331","owner":"rohini@amagi.com","description":"KASA MRR Setup 3.31"}
 }
 
