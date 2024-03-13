@@ -1,0 +1,26 @@
+name: Validate Dictionary Syntax
+
+on:
+  pull_request:
+    branches:
+      - main  # Set to your main branch name
+    types: [opened, synchronize]
+
+jobs:
+  validate-dictionary:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x  # Choose your desired Python version
+
+    - name: Install dependencies
+      run: pip install pyyaml
+
+    - name: Run validation script
+      run: python validate_dict.py
