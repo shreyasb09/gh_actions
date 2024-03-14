@@ -31,6 +31,7 @@ dept_stack = {
         }
     },
     "beta": {
+	    {"stack":"aws-use1-beta-qa7","owner":"gavi@amagi.com","description":"Stand alone setup resources"}
         "Dev":{
             "dev":[
                 {"stack":"aws-use1-dev-beta1","owner":"gavi@amagi.com","description":"cp 3.11 bug validation setup for dazn"},
