@@ -153,6 +153,7 @@ dept_stack = {
         },
 	"amagi-studio": { "studio":[{"stack":"studio","owner":"kushagra@amagi.com","description":"New product amagi studio testing"}]},
         "ieg-cp": {
+		{"stack":"aws-aps1-iota-mns3-ds","owner":"manav.nanwani@amagi.com","description":"Cluster to test new s3 ingest workflow"}
             "personal": [
                 {"stack":"teleport-iota","owner":"soumya.ranjan@amagi.com","description":"teleport access"},
                 {"stack":"jenkins","owner":"ieg-platform+common@amagi.com","description":"Dev jenkins"},
