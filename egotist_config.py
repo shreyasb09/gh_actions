@@ -78,7 +78,7 @@ dept_stack = {
                 {"stack":"lambda-janus","owner":"Varun","description":"Janus Server"},
 		{"stack":"aws-aps1-lambda-test","owner":"tharadevi.sr@amagi.com","description":"feature testing using standalone resources"},
 		{"stack":"deployment-server","owner":"tharadevi.sr@amagi.com","description":"common deployment servers"},
-		    {}
+		    
             ]
         }
     },
