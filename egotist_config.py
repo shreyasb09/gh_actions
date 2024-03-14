@@ -263,6 +263,5 @@ dept_stack = {
 	  ]
 	}
     },
-	{"stack":"aws-use1-cpdev-teta1","owner":"","description":""}
 }
 
