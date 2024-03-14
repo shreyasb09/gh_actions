@@ -55,6 +55,7 @@ dept_stack = {
         }
     },
     "theta": {
+	      {"stack":"aws-use1-cpdev-teta1","owner":"","description":""},
         "Dev":{
             "dev":[
                 {"stack":"aws-aps1-theta-dev","owner":"karthik.v@amagi.com","description":"Amagi Dynamic product development and testing"},
