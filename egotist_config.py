@@ -14,7 +14,7 @@ dept_stack = {
                 {"stack":"aws-aps1-gamma-common","owner":"ashutosh.mittal@amagi.com","description":"deployment servers"}
             ],
             "mapsor": [ {"stack":"mapsor-compute-mumbai","owner":"veeranjaneyulu.m@amagi.com","description":"mapsor"}],
-            "customisation": [{"stack":"aws-aps1-gamma-custo","owner":"vinayagar@amagi.com","description":"cp development setup for customization team"}]
+            "customisation": [{"stack":"aws-aps1-gamma-custo","owner":"vinayagar@amagi.com","description":"cp development setup for customization team"]
         }
     },
     "alpha": {
