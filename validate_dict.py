@@ -1,47 +1,49 @@
 import yaml
 import egotist_config
 
-
-def validate_dept_stack(dept_stack):
-    valid_keys = set(["gamma", "alpha", "beta", "sigma", "theta", "omega", "lambda", "iota"])
-
-    for dept, teams in dept_stack.items():
-        if dept not in valid_keys:
-            print(f"Error: '{dept}' department is not a valid key in the dictionary.")
+def validate_config(dept_stack):
+    for account, departments in dept_stack.items():
+        if not isinstance(account, str):
+            print("Error: Account name should be a string")
             return False
-        
-        if not isinstance(teams, dict):
-            print(f"Invalid data type for '{dept}' department: expected dictionary.")
+        if not isinstance(departments, dict):
+            print(f"Error: Departments for account '{account}' should be a dictionary")
             return False
-        
-        for team, categories in teams.items():
-            if not isinstance(categories, dict):
-                print(f"Invalid data type for '{team}' team in '{dept}' department: expected dictionary.")
+        for department, categories in departments.items():
+            if not isinstance(department, str):
+                print("Error: Department name should be a string")
                 return False
-            
+            if not isinstance(categories, dict):
+                print(f"Error: Categories for department '{department}' in account '{account}' should be a dictionary")
+                return False
             for category, stacks in categories.items():
-                if not isinstance(stacks, list):
-                    print(f"Invalid data type for '{category}' category in '{team}' team of '{dept}' department: expected list.")
+                if not isinstance(category, str):
+                    print("Error: Category name should be a string")
                     return False
-                
+                if not isinstance(stacks, list):
+                    print(f"Error: Stacks for category '{category}' in department '{department}' under account '{account}' should be a list")
+                    return False
+                if not stacks:
+                    print(f"Error: Stacks list for category '{category}' in department '{department}' under account '{account}' is empty")
+                    return False
                 for stack in stacks:
                     if not isinstance(stack, dict):
-                        print(f"Invalid data type for stack entry in '{category}' category of '{team}' team in '{dept}' department: expected dictionary.")
+                        print(f"Error: Stack entry '{stack}' in category '{category}' under department '{department}' in account '{account}' should be a dictionary")
                         return False
-                    
-                    if not all(key in stack for key in ("stack", "owner", "description")):
-                        print(f"Missing keys in stack entry in '{category}' category of '{team}' team in '{dept}' department.")
+                    if not all(key in stack for key in ["stack", "owner", "description"]):
+                        print(f"Error: Stack entry '{stack}' in category '{category}' under department '{department}' in account '{account}' is missing required keys")
                         return False
-                    
-                    if not all(isinstance(value, str) for value in stack.values()):
-                        print(f"Invalid data type for values in stack entry in '{category}' category of '{team}' team in '{dept}' department: expected strings.")
-                        return False
-                    
-    print("Dictionary validation successful: All entries are valid.")
+                    for key, value in stack.items():
+                        if not isinstance(value, str):
+                            print(f"Error: Value '{value}' for key '{key}' in stack entry '{stack}' is not a string")
+                            return False
     return True
 
+
+
+
 # Validate the dictionary
-if validate_dept_stack(egotist_config.dept_stack):
+if validate_config(egotist_config.dept_stack):
     print("Dictionary is valid.")
 else:
     print("Dictionary is not valid.")
@@ -59,7 +61,7 @@ def main():
         dept_stack = eval(dictionary_str)
 
         # Validate the dictionary
-        if validate_dept_stack(dept_stack):
+        if validate_config(dept_stack):
             print("Dictionary syntax is valid")
             exit(0) 
         else:
