@@ -71,6 +71,7 @@ dept_stack = {
     },
     "lambda": {
         "Dev":{
+				{"stack":"deployment-server","owner":"tharadevi.sr@amagi.com","description":"common deployment servers"},
             "dev":[
                 {"stack":"aws-aps1-lambda-dev2","owner":"karthik.v@amagi.com","description":"longhaul testing"},
                 {"stack":"aws-aps1-lambda-cpdev","owner":"karthik.v@amagi.com","description":"functional testing of features"},
