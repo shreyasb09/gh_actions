@@ -26,7 +26,7 @@ dept_stack = {
                 {"stack":"aws-apse1-alpha-tea","owner":"shiva.b@amagi.com","description":"crr development setup"},
                 {"stack":"aws-aps1-alpha-tea","owner":"shiva.b@amagi.com","description":"dev qa and longhaul testing"},
                 {"stack":"TR07","owner":"shiva.b@amagi.com","description":"Source players for cplive testing"},
-                {"stack":"deployment-server","owner":"shiva.b@amagi.com","description":"deployment servers for pulumi deployments"}
+                {"stack":"deployment-server","owner":"shiva.b@amagi.com","description":"deployment servers for pulumi deployments has it all"}
             ]
         }
     },
