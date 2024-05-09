@@ -1,26 +1,38 @@
-steps:
-  - name: Checkout code
-    uses: actions/checkout@v2
+name: shreya-test
 
-  - name: Set up Python
-    uses: actions/setup-python@v2
-    with:
-      python-version: 3.x
+on:
+  workflow_dispatch:
+    inputs:
+      package_version:
+        description: 'Version of the package to install'
+        required: true
+        default: '0.1.0'
 
-  - name: Configure pip.conf
-    env:
-      AWS_AUTH_TOKEN: ${{ secrets.AWS_AUTH_TOKEN }}
-    run: |
-      mkdir -p ~/.pip
-      cat > ~/.pip/pip.conf << EOF
-      [global]
-      index-url = https://aws:${AWS_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
-      extra-index-url = https://pypi.org/simple/
-      EOF
+jobs:
+  your-job:
+    runs-on: ubuntu-latest
 
-  - name: Install dependencies
-    run: pip install ieg==0.1.0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  # Add more steps for your workflow as needed
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
 
-      # Add more steps for your deployment process
+      - name: Configure pip.conf
+        env:
+          AWS_AUTH_TOKEN: ${{ secrets.AWS_AUTH_TOKEN }}
+        run: |
+          mkdir -p ~/.pip
+          cat > ~/.pip/pip.conf << EOF
+          [global]
+          index-url = https://aws:${AWS_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
+          extra-index-url = https://pypi.org/simple/
+          EOF
+
+      - name: Install dependencies
+        run: pip install ieg==${{ github.event.inputs.package_version }}
+
+      # Add more steps for your workflow as needed
