@@ -32,7 +32,7 @@ jobs:
           aws codeartifact login --tool pip --repository ieg --domain amgbeta
           cat > ~/.pip/pip.conf << EOF
           [global]
-          index-url = https://aws:${{ secrets.CODEARTIFACT_AUTH_TOKEN }}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
+          index-url = https://aws:${{$CODEARTIFACT_AUTH_TOKEN }}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
           extra-index-url = https://pypi.org/simple/
           EOF
       - name: Install dependencies
