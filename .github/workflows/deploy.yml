@@ -20,7 +20,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ap-south-1
-          role-to-assume: arn:aws:iam::109667701036role/cpcostiota-role
+          role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
           role-session-name: GitHubActions
           
       - name: Log in to AWS CodeArtifact
