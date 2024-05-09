@@ -1,6 +1,7 @@
 name: Automated Unit Tests
 
-on: [pull_request]
+on:
+  workflow_dispatch:
 
 jobs:
   automated-unit-tests:
