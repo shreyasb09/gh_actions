@@ -19,7 +19,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ap-south-1 # change to appropriate region
-          role-to-assume: arn:aws:iam::891377049890:role/hey-RepositoryRole-4lSCMGMNSxK1
+          role-to-assume: arn:aws:iam::891377049890:role/aws-role
           role-session-name: my_repo
           role-duration-seconds: 900
 
