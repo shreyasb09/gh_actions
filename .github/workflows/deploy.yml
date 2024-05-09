@@ -1,15 +1,10 @@
-name: shreya-test
+name: Deploy
 
 on:
   workflow_dispatch:
-    inputs:
-      package_version:
-        description: 'Version of the package to install'
-        required: true
-        default: '0.1.0'
 
 jobs:
-  your-job:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +28,6 @@ jobs:
           EOF
 
       - name: Install dependencies
-        run: pip install ieg==${{ github.event.inputs.package_version }}
+        run: pip install ieg==0.1.0
 
-      # Add more steps for your workflow as needed
+      # Add more steps for your deployment process as needed
