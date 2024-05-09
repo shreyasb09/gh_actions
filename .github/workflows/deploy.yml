@@ -29,7 +29,7 @@ jobs:
       - name: Log in to AWS CodeArtifact
         run: |
           mkdir -p ~/.pip
-          aws codeartifact login --tool pip --repository ieg --domain amgbeta
+          aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1
           cat > ~/.pip/pip.conf << EOF
           [global]
           index-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
