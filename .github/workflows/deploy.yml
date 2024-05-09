@@ -1,38 +1,36 @@
-name: Deploy
-on: workflow_dispatch
+
+name: Automated Unit Tests
+
+on: 
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  automated-unit-tests:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-region: ap-south-1
+          aws-region: ap-south-1 # change to appropriate region
           role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
-          role-session-name: GitHubActions
-          
-      - name: Log in to AWS CodeArtifact
-        run: |
-          mkdir -p ~/.pip
-          aws codeartifact login --tool pip --repository ieg --domain amgbeta
-          cat > ~/.pip/pip.conf << EOF
-          [global]
-          index-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
-          extra-index-url = https://pypi.org/simple/
-          EOF
+          role-session-name: my_repo
+          role-duration-seconds: 900
 
-      - name: Install dependencies
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install Dependencies
         run: |
-          pip install ieg==0.1.0
+          aws codeartifact login --tool pip --domain my_domain --repository my_repo &&
+          pip install -r requirements.txt
+      - name: Run Tests
+        run: pytest
