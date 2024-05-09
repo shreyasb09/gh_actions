@@ -19,7 +19,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ap-south-1 # change to appropriate region
-          role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
+          role-to-assume: arn:aws:iam::109667701036:role/git-ecr-helm-repo
           role-session-name: my_repo
           role-duration-seconds: 900
 
