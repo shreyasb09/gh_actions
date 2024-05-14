@@ -51,6 +51,9 @@ jobs:
       - name: Create Docker directory
         run: mkdir docker
 
+      - name: Move app directory to docker directory
+        run: mv app docker/
+
       - name: Create Dockerfile
         run: |
           cd docker
@@ -63,7 +66,7 @@ jobs:
           echo "RUN ./aws/install" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Copy files from local directory to container" >> Dockerfile
-          echo "COPY ../app /app" >> Dockerfile
+          echo "COPY ./app /app" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Set the working directory" >> Dockerfile
           echo "WORKDIR /app" >> Dockerfile
