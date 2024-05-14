@@ -72,9 +72,11 @@ jobs:
               echo "CMD [\"tail\", \"-f\", \"/dev/null\"]" >> Dockerfile
               cd ..
 
-          - name: Build and push Docker image
+          - name: Build Docker image
+            run: docker build -t cpcost ./docker
+
+          - name: Push Docker image
             run: |
               docker login --username AWS --password "$AWS_ECR_PASSWORD" 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-              docker build -t cpcost ./docker
               docker tag cpcost:latest 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/trial:latest
               docker push 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/trial:latest
