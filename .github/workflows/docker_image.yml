@@ -1,0 +1,62 @@
+name: Push to ECR
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  assume_role:
+    runs-on: ubuntu-latest
+    outputs:
+      aws-region: ${{ steps.assume-role.outputs.aws-region }}
+    steps:
+      - name: Assume IAM role
+        id: assume-role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ap-south-1
+          role-to-assume: arn:aws:iam::891377049890:role/shreyasb09
+          role-duration-seconds: 3600
+
+  create_ecr_repository:
+    runs-on: ubuntu-latest
+    needs: assume_role
+    steps:
+      - name: Create ECR repository
+        run: |
+          aws ecr create-repository --repository-name trial
+        env:
+          AWS_DEFAULT_REGION: ${{ needs.assume_role.outputs.aws-region }}
+
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: [assume_role, create_ecr_repository]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build and push Docker image
+        env:
+          AWS_DEFAULT_REGION: ${{ needs.assume_role.outputs.aws-region }}
+        run: |
+          echo "FROM amazonlinux:latest" > Dockerfile
+          echo "" >> Dockerfile
+          echo "# Install AWS CLI" >> Dockerfile
+          echo "RUN yum install -y unzip" >> Dockerfile
+          echo "RUN curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"" >> Dockerfile
+          echo "RUN unzip awscliv2.zip" >> Dockerfile
+          echo "RUN ./aws/install" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Copy files from S3 bucket to container" >> Dockerfile
+          echo "RUN aws s3 sync s3://costexplorer10/devcost /app" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Set the working directory" >> Dockerfile
+          echo "WORKDIR /app" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Specify the command to run when the container starts" >> Dockerfile
+          echo "CMD [\"tail\", \"-f\", \"/dev/null\"]" >> Dockerfile
+
+          aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+          docker build -t cpcost .
+          docker tag cpcost:latest 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/trial:latest
+          docker push 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/trial:latest
