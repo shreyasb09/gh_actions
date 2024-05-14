@@ -1,7 +1,7 @@
 name: Push to ECR
 
 on:
- workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Create ECR repository
         run: |
-          aws ecr create-repository --repository-name trial
+          aws ecr create-repository --repository-name trial --endpoint-url https://api.ecr.ap-south-1.amazonaws.com
         env:
           AWS_DEFAULT_REGION: ${{ needs.assume_role.outputs.aws-region }}
 
