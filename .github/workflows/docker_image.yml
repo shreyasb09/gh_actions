@@ -43,6 +43,9 @@ jobs:
           aws ecr get-login-password --region ${{ steps.assume-role.outputs.aws-region }} | tee /tmp/ecr_password.txt
           echo "password=$(cat /tmp/ecr_password.txt)" >> $GITHUB_OUTPUT
 
+      - name: Sync S3 bucket to local directory
+        run: aws s3 sync s3://costexplorer10/devcost ./app
+
       - name: Create Docker directory
         run: mkdir docker
 
@@ -57,8 +60,8 @@ jobs:
           echo "RUN unzip awscliv2.zip" >> Dockerfile
           echo "RUN ./aws/install" >> Dockerfile
           echo "" >> Dockerfile
-          echo "# Copy files from S3 bucket to container" >> Dockerfile
-          echo "RUN aws s3 sync s3://costexplorer10/devcost /app" >> Dockerfile
+          echo "# Copy files from local directory to container" >> Dockerfile
+          echo "COPY ./app /app" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Set the working directory" >> Dockerfile
           echo "WORKDIR /app" >> Dockerfile
