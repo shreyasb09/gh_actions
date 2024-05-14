@@ -59,6 +59,9 @@ jobs:
         env:
           AWS_DEFAULT_REGION: ${{ steps.assume-role.outputs.aws-region }}
         run: |
+          mkdir docker
+          cd docker
+          echo "FROM amazonlinux:latest" > Dockerfile
           echo "FROM amazonlinux:latest" > Dockerfile
           echo "" >> Dockerfile
           echo "# Install AWS CLI" >> Dockerfile
@@ -76,7 +79,8 @@ jobs:
           echo "# Specify the command to run when the container starts" >> Dockerfile
           echo "CMD [\"tail\", \"-f\", \"/dev/null\"]" >> Dockerfile
 
+          cd ..
           aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-          docker build -t cpcost .
+          docker build -t cpcost ./docker
           docker tag cpcost:latest 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/trial:latest
           docker push 891377049890.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/trial:latest
