@@ -37,11 +37,6 @@ jobs:
           role-session-name: ecr-push
           aws-region: ap-south-1
 
-      - name: Get ECR login password
-        id: ecr-login
-        run: |
-          echo "AWS_ECR_PASSWORD=$(aws ecr get-login-password --region ${{ steps.assume-role.outputs.aws-region }})" >> $GITHUB_ENV
-
       - name: Sync S3 bucket to local directory
         run: |
           mkdir -p app
@@ -78,9 +73,7 @@ jobs:
         run: docker build -t cpcost ./docker
 
       - name: Push Docker image
-        env:
-          AWS_ECR_PASSWORD: ${{ env.AWS_ECR_PASSWORD }}
         run: |
-          docker login --username AWS --password "$AWS_ECR_PASSWORD" 891377049890.dkr.ecr.${{ steps.assume-role.outputs.aws-region }}.amazonaws.com
-          docker tag cpcost:latest 891377049890.dkr.ecr.${{ steps.assume-role.outputs.aws-region }}.amazonaws.com/trial:latest
-          docker push 891377049890.dkr.ecr.${{ steps.assume-role.outputs.aws-region }}.amazonaws.com/trial:latest
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 891377049890.dkr.ecr.ap-south-1.amazonaws.com
+          docker tag cpcost:latest 891377049890.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
+          docker push 891377049890.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
