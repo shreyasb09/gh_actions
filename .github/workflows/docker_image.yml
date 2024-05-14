@@ -44,7 +44,9 @@ jobs:
           echo "password=$(cat /tmp/ecr_password.txt)" >> $GITHUB_OUTPUT
 
       - name: Sync S3 bucket to local directory
-        run: aws s3 sync s3://costexplorer10/devcost ./app
+        run: |
+          mkdir -p app
+          aws s3 sync s3://costexplorer10/devcost ./app
 
       - name: Create Docker directory
         run: mkdir docker
@@ -61,7 +63,7 @@ jobs:
           echo "RUN ./aws/install" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Copy files from local directory to container" >> Dockerfile
-          echo "COPY ./app /app" >> Dockerfile
+          echo "COPY ../app /app" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Set the working directory" >> Dockerfile
           echo "WORKDIR /app" >> Dockerfile
