@@ -1,4 +1,4 @@
-name: ECS
+name: Push to ECR
 
 on:
   workflow_dispatch:
@@ -37,16 +37,6 @@ jobs:
           role-session-name: ecr-push
           aws-region: ap-south-1
 
-      - name: Log in to AWS CodeArtifact
-        run: |
-          mkdir -p ~/.pip
-          aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1
-          cat > ~/.pip/pip.conf << EOF
-          [global]
-          index-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
-          extra-index-url = https://pypi.org/simple/
-          EOF
-
       - name: Create Dockerfile
         run: |
           echo "# Build stage" > Dockerfile
@@ -55,6 +45,11 @@ jobs:
           echo "" >> Dockerfile
           echo "# Install AWS CLI" >> Dockerfile
           echo "RUN apt-get update && apt-get install -y awscli" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Assume IAM role" >> Dockerfile
+          echo "RUN aws configure set aws_access_key_id $(aws sts get-caller-identity --query 'Arn' --output text | cut -f 2 -d '/' | sed 's/://g')" >> Dockerfile
+          echo "RUN aws configure set aws_secret_access_key $(aws sts get-caller-identity --query 'SecretAccessKey' --output text)" >> Dockerfile
+          echo "RUN aws configure set aws_session_token $(aws sts get-caller-identity --query 'Token' --output text)" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Log in to AWS CodeArtifact" >> Dockerfile
           echo "RUN mkdir -p ~/.pip" >> Dockerfile
