@@ -1,4 +1,4 @@
-name: ECS
+name: Push to ECR
 
 on:
   workflow_dispatch:
