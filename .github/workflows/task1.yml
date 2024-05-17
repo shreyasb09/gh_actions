@@ -50,10 +50,10 @@ jobs:
           echo "# Install AWS CLI" >> Dockerfile
           echo "RUN apt-get update && apt-get install -y awscli" >> Dockerfile
           echo "" >> Dockerfile
-          echo "# Set AWS credentials" >> Dockerfile
-          echo "ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> Dockerfile
-          echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
-          echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
+          echo "# Configure AWS credentials" >> Dockerfile
+          echo "RUN aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}" >> Dockerfile
+          echo "RUN aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
+          echo "RUN aws configure set aws_session_token ${AWS_SESSION_TOKEN}" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Log in to AWS CodeArtifact" >> Dockerfile
           echo "RUN mkdir -p ~/.pip" >> Dockerfile
