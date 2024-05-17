@@ -1,4 +1,4 @@
-name: Push to ECR
+name: Push to ECR2
 
 on:
   workflow_dispatch:
