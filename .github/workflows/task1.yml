@@ -22,6 +22,10 @@ jobs:
         role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
         role-session-name: my_repo
         role-duration-seconds: 900
+      id: aws-credentials
+
+    - name: Set AWS Session Token
+      run: echo "AWS_SESSION_TOKEN=${{ steps.aws-credentials.outputs.aws-session-token }}" >> $GITHUB_ENV
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
