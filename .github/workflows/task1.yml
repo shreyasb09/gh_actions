@@ -38,6 +38,10 @@ jobs:
           aws-region: ap-south-1
 
       - name: Create Dockerfile
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.assume-role.outputs.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.assume-role.outputs.aws_secret_access_key }}
+          AWS_SESSION_TOKEN: ${{ steps.assume-role.outputs.aws_session_token }}
         run: |
           echo "# Build stage" > Dockerfile
           echo "FROM python:3.9-slim as build" >> Dockerfile
@@ -46,10 +50,10 @@ jobs:
           echo "# Install AWS CLI" >> Dockerfile
           echo "RUN apt-get update && apt-get install -y awscli" >> Dockerfile
           echo "" >> Dockerfile
-          echo "# Assume IAM role" >> Dockerfile
-          echo "RUN aws configure set aws_access_key_id $(aws sts get-caller-identity --query 'Arn' --output text | cut -f 2 -d '/' | sed 's/://g')" >> Dockerfile
-          echo "RUN aws configure set aws_secret_access_key $(aws sts get-caller-identity --query 'SecretAccessKey' --output text)" >> Dockerfile
-          echo "RUN aws configure set aws_session_token $(aws sts get-caller-identity --query 'Token' --output text)" >> Dockerfile
+          echo "# Set AWS credentials" >> Dockerfile
+          echo "ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> Dockerfile
+          echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
+          echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Log in to AWS CodeArtifact" >> Dockerfile
           echo "RUN mkdir -p ~/.pip" >> Dockerfile
