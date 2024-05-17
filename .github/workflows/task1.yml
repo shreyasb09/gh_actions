@@ -75,7 +75,7 @@ jobs:
         run: |
           echo "FROM python:3.9-slim" > Dockerfile
           echo "WORKDIR /app" >> Dockerfile
-          echo "COPY ieg-package/ieg_package /app/ieg_package" >> Dockerfile
+          echo "COPY ieg-package /app/ieg_package" >> Dockerfile
           echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
           echo "ENV PYTHONPATH=/app/ieg_package" >> Dockerfile
           echo 'ENTRYPOINT ["python", "/app/cpcost.py"]' >> Dockerfile
