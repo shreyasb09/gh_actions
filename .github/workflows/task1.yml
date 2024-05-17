@@ -53,8 +53,8 @@ jobs:
         echo "RUN mkdir /aws-web-identity-token" >> Dockerfile
         echo "RUN aws configure set role_arn \"\$AWS_ROLE_ARN\" --profile assume-role" >> Dockerfile
         echo "RUN aws configure set web_identity_token_file \"/aws-web-identity-token\" --profile assume-role" >> Dockerfile
-        echo "RUN aws configure set role_session_name \"github-actions\" --profile assume-role" >> Dockerfile
-        echo "RUN aws sts assume-role --profile assume-role --role-arn \"\$AWS_ROLE_ARN\" --web-identity-token=\"\$(aws sts get-caller-identity --query 'Arn' --output text)\" > /aws-web-identity-token/token" >> Dockerfile
+        echo "RUN aws configure set role_session_name \"cpcostiota-role\" --profile assume-role" >> Dockerfile
+        echo "RUN aws sts assume-role --profile assume-role --role-arn \"\$AWS_ROLE_ARN\" --role-session-name \"cpcostiota-role\" --web-identity-token=\"\$(aws sts get-caller-identity --query 'Arn' --output text)\" > /aws-web-identity-token/token" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Get CodeArtifact authorization token" >> Dockerfile
         echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text --profile assume-role)" >> Dockerfile
