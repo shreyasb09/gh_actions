@@ -84,5 +84,5 @@ jobs:
       - name: Push Docker image
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
-          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
-          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost-container:latest
+          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost-container:latest
