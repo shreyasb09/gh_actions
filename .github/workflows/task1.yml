@@ -37,27 +37,41 @@ jobs:
           role-session-name: ecr-push
           aws-region: ap-south-1
 
-      - name: Create Docker directory
-        run: mkdir docker
-
-      - name: Move cpcost.py to docker directory
+      - name: Log in to AWS CodeArtifact
         run: |
-          mkdir -p app
-          mv gh_actions/cpcost.py app/
-          mv app docker/
+          mkdir -p ~/.pip
+          aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1
+          cat > ~/.pip/pip.conf << EOF
+          [global]
+          index-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
+          extra-index-url = https://pypi.org/simple/
+          EOF
 
       - name: Create Dockerfile
         run: |
-          cd docker
-          echo "FROM python:3.9-slim" > Dockerfile
-          echo "COPY app/cpcost.py /app/cpcost.py" >> Dockerfile
+          echo "# Build stage" > Dockerfile
+          echo "FROM python:3.9-slim as build" >> Dockerfile
           echo "WORKDIR /app" >> Dockerfile
-          echo "RUN pip install ieg" >> Dockerfile
-          echo 'CMD ["python", "cpcost.py"]' >> Dockerfile
-          cd ..
+          echo "" >> Dockerfile
+          echo "# Log in to AWS CodeArtifact" >> Dockerfile
+          echo "RUN mkdir -p ~/.pip" >> Dockerfile
+          echo "RUN aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1" >> Dockerfile
+          echo "RUN echo \"[global]\nindex-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/\nextra-index-url = https://pypi.org/simple/\" > ~/.pip/pip.conf" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Install ieg package" >> Dockerfile
+          echo "RUN pip install ieg==0.1.0" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Copy cpcost.py" >> Dockerfile
+          echo "COPY gh_actions/cpcost.py /app/cpcost.py" >> Dockerfile
+          echo "" >> Dockerfile
+          echo "# Final stage" >> Dockerfile
+          echo "FROM python:3.9-slim" >> Dockerfile
+          echo "WORKDIR /app" >> Dockerfile
+          echo "COPY --from=build /app/cpcost.py /app/cpcost.py" >> Dockerfile
+          echo "CMD [\"python\", \"cpcost.py\"]" >> Dockerfile
 
       - name: Build Docker image
-        run: docker build -t cpcost ./docker
+        run: docker build -t cpcost .
 
       - name: Push Docker image
         run: |
