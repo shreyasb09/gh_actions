@@ -37,19 +37,30 @@ jobs:
           role-session-name: ecr-push
           aws-region: ap-south-1
 
+      - name: Create Docker directory
+        run: mkdir docker
+
+      - name: Move app directory to docker directory
+        run: |
+          mkdir -p app
+          mv ieg_lib_toolkit/ieg_cost/cpcost.py app/
+          mv app docker/
+
       - name: Create Dockerfile
         run: |
+          cd docker
           echo "FROM python:3.9-slim" > Dockerfile
-          echo "COPY ieg_lib_toolkit/ieg_cost/cpcost.py /app/cpcost.py" >> Dockerfile
+          echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
           echo "WORKDIR /app" >> Dockerfile
           echo "RUN pip install ieg" >> Dockerfile
           echo 'CMD ["python", "cpcost.py"]' >> Dockerfile
+          cd ..
 
       - name: Build Docker image
-        run: docker build -t cpcost .
+        run: docker build -t cpcost ./docker
 
       - name: Push Docker image
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
-          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
-          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
+          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
