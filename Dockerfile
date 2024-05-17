@@ -6,6 +6,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y awscli
 
 # Configure AWS credentials
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_SESSION_TOKEN
+
+RUN aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+RUN aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+RUN aws configure set aws_session_token $AWS_SESSION_TOKEN
 RUN aws configure set region ap-south-1
 
 # Log in to AWS CodeArtifact
