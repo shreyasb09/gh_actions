@@ -1,4 +1,4 @@
-name: Push to ECR
+name: Trial
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ jobs:
         id: assume-role
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
-          role-to-assume: arn:aws:iam::891377049890:role/shreyasb09
+          role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
           role-session-name: ecr-push
           aws-region: ap-south-1
 
@@ -27,46 +27,33 @@ jobs:
     needs: assume_role
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Assume IAM role
         id: assume-role
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
-          role-to-assume: arn:aws:iam::891377049890:role/shreyasb09
+          role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
           role-session-name: ecr-push
           aws-region: ap-south-1
-
-      - name: Sync S3 bucket to local directory
-        run: |
-          mkdir -p app
-          aws s3 sync s3://costexplorer10/devcost ./app
 
       - name: Create Docker directory
         run: mkdir docker
 
       - name: Move app directory to docker directory
-        run: mv app docker/
+        run: |
+          mkdir -p app
+          mv ieg_lib_toolkit/ieg_cost/cpcost.py app/
+          mv app docker/
 
       - name: Create Dockerfile
         run: |
           cd docker
-          echo "FROM amazonlinux:latest" > Dockerfile
-          echo "" >> Dockerfile
-          echo "# Install AWS CLI" >> Dockerfile
-          echo "RUN yum install -y unzip" >> Dockerfile
-          echo "RUN curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"" >> Dockerfile
-          echo "RUN unzip awscliv2.zip" >> Dockerfile
-          echo "RUN ./aws/install" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Copy files from local directory to container" >> Dockerfile
-          echo "COPY ./app /app" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the working directory" >> Dockerfile
+          echo "FROM python:3.9-slim" > Dockerfile
+          echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
           echo "WORKDIR /app" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Specify the command to run when the container starts" >> Dockerfile
-          echo "CMD [\"tail\", \"-f\", \"/dev/null\"]" >> Dockerfile
+          echo "RUN pip install ieg" >> Dockerfile
+          echo 'CMD ["python", "cpcost.py"]' >> Dockerfile
           cd ..
 
       - name: Build Docker image
@@ -74,6 +61,6 @@ jobs:
 
       - name: Push Docker image
         run: |
-          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 891377049890.dkr.ecr.ap-south-1.amazonaws.com
-          docker tag cpcost:latest 891377049890.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
-          docker push 891377049890.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
+          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
