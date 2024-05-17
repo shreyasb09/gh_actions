@@ -43,7 +43,7 @@ jobs:
       - name: Move cpcost.py to docker directory
         run: |
           mkdir -p app
-          mv cpcost.py app/
+          mv gh_actions/cpcost.py app/
           mv app docker/
 
       - name: Create Dockerfile
