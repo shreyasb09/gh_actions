@@ -1,4 +1,4 @@
-name: Trial
+name: Push to ECR
 
 on:
   workflow_dispatch:
@@ -40,10 +40,10 @@ jobs:
       - name: Create Docker directory
         run: mkdir docker
 
-      - name: Move app directory to docker directory
+      - name: Move cpcost.py to docker directory
         run: |
           mkdir -p app
-          mv ieg_lib_toolkit/ieg_cost/cpcost.py app/
+          mv gh_actions/cpcost.py app/
           mv app docker/
 
       - name: Create Dockerfile
