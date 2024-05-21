@@ -1,4 +1,4 @@
-name: Ecs
+name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
@@ -59,7 +59,7 @@ jobs:
         echo "" >> Dockerfile
         echo "# Configure AWS CLI to use the assumed role" >> Dockerfile
         echo "RUN mkdir -p ~/.aws" >> Dockerfile
-        echo "RUN echo -e \"\[default\]\\nrole_arn = \${AWS_ROLE_ARN}\\ncredential_source = Ec2InstanceMetadata\" > ~/.aws/config" >> Dockerfile
+        echo "RUN echo -e \"[default]\\nrole_arn = \${AWS_ROLE_ARN}\\ncredential_source = Ec2InstanceMetadata\" > ~/.aws/config" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Get CodeArtifact authorization token" >> Dockerfile
         echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
