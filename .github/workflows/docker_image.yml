@@ -69,6 +69,7 @@ jobs:
         echo "RUN aws configure set aws_session_token \"\$AWS_SESSION_TOKEN\" --profile assume-role" >> Dockerfile
         echo "RUN aws configure set role_arn \"\$ROLE_ARN\" --profile assume-role" >> Dockerfile
         echo "RUN aws configure set role_session_name \"\$ROLE_SESSION_NAME\" --profile assume-role" >> Dockerfile
+        echo "RUN aws configure set source_profile default --profile assume-role" >> Dockerfile
         echo "RUN aws configure set output json --profile assume-role" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Get CodeArtifact authorization token" >> Dockerfile
