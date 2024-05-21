@@ -44,9 +44,13 @@ jobs:
         echo "# Set the AWS_ROLE_ARN environment variable" >> Dockerfile
         echo "ENV AWS_ROLE_ARN=arn:aws:iam::109667701036:role/cpcostiota-role" >> Dockerfile
         echo "" >> Dockerfile
-        echo "# Configure the AWS CLI to use the IAM role" >> Dockerfile
-        echo "RUN aws configure set role_arn \$AWS_ROLE_ARN && \\" >> Dockerfile
-        echo "    aws configure set source_profile default" >> Dockerfile
+        echo "# Assume the IAM role" >> Dockerfile
+        echo "RUN aws sts assume-role --role-arn \$AWS_ROLE_ARN --role-session-name my-session > /tmp/assume-role-output.json" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Set the temporary credentials from the assumed role" >> Dockerfile
+        echo "RUN export AWS_ACCESS_KEY_ID=\$(jq -r '.Credentials.AccessKeyId' /tmp/assume-role-output.json) && \\" >> Dockerfile
+        echo "    export AWS_SECRET_ACCESS_KEY=\$(jq -r '.Credentials.SecretAccessKey' /tmp/assume-role-output.json) && \\" >> Dockerfile
+        echo "    export AWS_SESSION_TOKEN=\$(jq -r '.Credentials.SessionToken' /tmp/assume-role-output.json)" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Get CodeArtifact authorization token" >> Dockerfile
         echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
