@@ -1,30 +1,80 @@
-name: Run Dockerfile and AWS CodeArtifact Login
+name: Build and Push Docker Image
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  run-dockerfile:
+
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v2
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1.7.0
       with:
         aws-region: ap-south-1
         role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
-        role-duration-seconds: 1200
-        role-session-name: GitHubActions
+        role-session-name: my_repo
+        role-duration-seconds: 900
+      id: aws-credentials
 
-    - name: Build Docker image
-      run: |
-        docker build -t my-image .
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
 
-    - name: Run Docker container
+    - name: Build and push Docker image
+      env:
+        AWS_ROLE_ARN: arn:aws:iam::109667701036:role/cpcostiota-role
       run: |
-        docker run --rm my-image sh -c "aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1"
+        # Build stage
+        echo "# Use a base image with Python and AWS CLI installed" > Dockerfile
+        echo "FROM amazon/aws-cli:2.7.24" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Install Python and pip" >> Dockerfile
+        echo "RUN apt-get update && apt-get install -y python3 python3-pip" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Upgrade pip" >> Dockerfile
+        echo "RUN pip3 install --upgrade pip" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Install Python dependencies" >> Dockerfile
+        echo "RUN pip3 install boto3" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Copy your application code" >> Dockerfile
+        echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Set environment variables for AWS credentials" >> Dockerfile
+        echo "ENV AWS_DEFAULT_REGION=ap-south-1" >> Dockerfile
+        echo "ENV AWS_ROLE_ARN=$AWS_ROLE_ARN" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Assume the IAM role" >> Dockerfile
+        echo "RUN aws configure set role_arn \$AWS_ROLE_ARN" >> Dockerfile
+        echo "RUN aws configure set credential_source Ec2InstanceMetadata" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Configure AWS CLI to use the assumed role" >> Dockerfile
+        echo "RUN mkdir -p ~/.aws" >> Dockerfile
+        echo "RUN echo -e \"\[default\]\\nrole_arn = \${AWS_ROLE_ARN}\\ncredential_source = Ec2InstanceMetadata\" > ~/.aws/config" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Get CodeArtifact authorization token" >> Dockerfile
+        echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Log in to AWS CodeArtifact" >> Dockerfile
+        echo "RUN aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1 --auth-token \$auth_token" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Install ieg package from CodeArtifact" >> Dockerfile
+        echo "RUN pip3 install ieg --upgrade" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Set the entrypoint to run the script" >> Dockerfile
+        echo "ENTRYPOINT [\"python3\", \"/app/cpcost.py\"]" >> Dockerfile
+        
+        docker build -t cpcost .
+        
+        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
+        docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+        docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
