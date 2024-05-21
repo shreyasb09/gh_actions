@@ -1,89 +1,72 @@
-name: pls work
+name: ECS
 
 on:
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
 
-  assume_role:
+  build-and-push:
     runs-on: ubuntu-latest
-    outputs:
-      aws-region: ${{ steps.assume-role.outputs.aws-region }}
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
-      - name: Assume IAM role
-        id: assume-role
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: arn:aws:iam::891377049890:role/shreyasb09
-          role-session-name: ecr-push
-          aws-region: ap-south-1
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-  build_and_push:
-    runs-on: ubuntu-latest
-    needs: assume_role
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1.7.0
+      with:
+        aws-region: ap-south-1
+        role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
+        role-session-name: my_repo
+        role-duration-seconds: 900
+      id: aws-credentials
 
-      - name: Assume IAM role
-        id: assume-role
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: arn:aws:iam::891377049890:role/shreyasb09
-          role-session-name: ecr-push
-          aws-region: ap-south-1
+    - name: Set AWS Session Token
+      run: echo "AWS_SESSION_TOKEN=${{ steps.aws-credentials.outputs.aws-session-token }}" >> $GITHUB_ENV
 
-      - name: Sync S3 bucket to local directory
-        run: |
-          mkdir -p app
-          aws s3 sync s3://costexplorer10/devcost ./app
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
 
-      - name: Create Docker directory
-        run: mkdir docker
-
-      - name: Move app directory to docker directory
-        run: mv app docker/
-
-      - name: Create Dockerfile
-        run: |
-          cd docker
-          echo "# Use a base image with Python and AWS CLI installed" > Dockerfile
-          echo "FROM amazon/aws-cli:2.7.24" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Install Python dependencies" >> Dockerfile
-          echo "RUN pip install --upgrade pip" >> Dockerfile
-          echo "RUN pip install boto3" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Copy your application code" >> Dockerfile
-          echo "COPY app.py /app/app.py" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set environment variables for AWS credentials" >> Dockerfile
-          echo "ENV AWS_DEFAULT_REGION=ap-south-1" >> Dockerfile
-          echo "ENV ROLE_ARN=arn:aws:iam::891377049890:role/shreyasb09" >> Dockerfile
-          echo "ENV ROLE_SESSION_NAME=ecr-push" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Create a script to assume the IAM role and access CodeArtifact" >> Dockerfile
-          echo "RUN echo '#!/bin/bash' > /assume-role.sh" >> Dockerfile
-          echo "RUN echo 'temp_creds=\$(aws sts assume-role --role-arn \"\$ROLE_ARN\" --role-session-name \"\$ROLE_SESSION_NAME\" --query \"Credentials.[AccessKeyId,SecretAccessKey,SessionToken]\" --output text)' >> /assume-role.sh" >> Dockerfile
-          echo "RUN echo 'export AWS_ACCESS_KEY_ID=\$(echo \"\$temp_creds\" | awk \"{print \$1}\")' >> /assume-role.sh" >> Dockerfile
-          echo "RUN echo 'export AWS_SECRET_ACCESS_KEY=\$(echo \"\$temp_creds\" | awk \"{print \$2}\")' >> /assume-role.sh" >> Dockerfile
-          echo "RUN echo 'export AWS_SESSION_TOKEN=\$(echo \"\$temp_creds\" | awk \"{print \$3}\")' >> /assume-role.sh" >> Dockerfile
-          echo "RUN echo 'python /app/app.py' >> /assume-role.sh" >> Dockerfile
-          echo "RUN chmod +x /assume-role.sh" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the entrypoint to run the script" >> Dockerfile
-          echo "ENTRYPOINT [\"/assume-role.sh\"]" >> Dockerfile
-          cd ..
-
-      - name: Build Docker image
-        run: docker build -t cpcost ./docker
-
-      - name: Push Docker image
-        run: |
-          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 891377049890.dkr.ecr.ap-south-1.amazonaws.com
-          docker tag cpcost:latest 891377049890.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
-          docker push 891377049890.dkr.ecr.ap-south-1.amazonaws.com/trial:latest
+    - name: Build and push Docker image
+      env:
+        AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
+        AWS_ROLE_ARN: arn:aws:iam::109667701036:role/cpcostiota-role
+      run: |
+        # Build stage
+        echo "# Use a base image with Python and AWS CLI installed" > Dockerfile
+        echo "FROM amazon/aws-cli:2.7.24" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Install Python dependencies" >> Dockerfile
+        echo "RUN pip install --upgrade pip" >> Dockerfile
+        echo "RUN pip install boto3" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Copy your application code" >> Dockerfile
+        echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Set environment variables for AWS credentials" >> Dockerfile
+        echo "ENV AWS_DEFAULT_REGION=ap-south-1" >> Dockerfile
+        echo "ENV ROLE_ARN=arn:aws:iam::109667701036:role/cpcostiota-role" >> Dockerfile
+        echo "ENV ROLE_SESSION_NAME=my_repo" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Create a script to assume the IAM role and access CodeArtifact" >> Dockerfile
+        echo "RUN echo '#!/bin/bash' > /assume-role.sh" >> Dockerfile
+        echo "RUN echo 'temp_creds=\$(aws sts assume-role --role-arn \"\$ROLE_ARN\" --role-session-name \"\$ROLE_SESSION_NAME\" --query \"Credentials.[AccessKeyId,SecretAccessKey,SessionToken]\" --output text)' >> /assume-role.sh" >> Dockerfile
+        echo "RUN echo 'export AWS_ACCESS_KEY_ID=\$(echo \"\$temp_creds\" | awk \"{print \$1}\")' >> /assume-role.sh" >> Dockerfile
+        echo "RUN echo 'export AWS_SECRET_ACCESS_KEY=\$(echo \"\$temp_creds\" | awk \"{print \$2}\")' >> /assume-role.sh" >> Dockerfile
+        echo "RUN echo 'export AWS_SESSION_TOKEN=\$(echo \"\$temp_creds\" | awk \"{print \$3}\")' >> /assume-role.sh" >> Dockerfile
+        echo "RUN echo 'python /app/cpcost.py' >> /assume-role.sh" >> Dockerfile
+        echo "RUN chmod +x /assume-role.sh" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Set the entrypoint to run the script" >> Dockerfile
+        echo "ENTRYPOINT [\"/assume-role.sh\"]" >> Dockerfile
+        
+        docker build -t cpcost .
+        
+        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
+        docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+        docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
