@@ -1,14 +1,16 @@
-FROM python:3.9-slim
+# Install AWS CLI
+RUN apt-get update && apt-get install -y awscli
 
-WORKDIR /app
+# Install pip
+RUN apt-get install -y python3-pip
 
-# Copy the ieg_package directory into the Docker image
-COPY ./ieg_package /app/ieg_package
+# Assume the IAM role
+ENV AWS_ROLE_ARN=arn:aws:iam::109667701036:role/cpcostiota-role
+RUN aws configure set role_arn $AWS_ROLE_ARN && \
+    aws configure set source_profile default
 
-# Copy the cpcost.py script into the Docker image
-COPY ./gh_actions/cpcost.py /app/cpcost.py
+# Configure AWS CLI to use the assumed role
+RUN mkdir -p ~/.aws && \
+    echo -e "[default]\nrole_arn = ${AWS_ROLE_ARN}\ncredential_source = Ec2InstanceMetadata" > ~/.aws/config
 
-# Set the PYTHONPATH to include the ieg_package directory
-ENV PYTHONPATH=/app/ieg_package
-
-ENTRYPOINT ["python", "/app/cpcost.py"]
+# Your other Dockerfile instructions...
