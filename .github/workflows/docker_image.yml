@@ -1,4 +1,4 @@
-name: pls work
+name: ECS
 
 on:
   workflow_dispatch:
@@ -41,9 +41,14 @@ jobs:
         echo "# Use a base image with Python and AWS CLI installed" > Dockerfile
         echo "FROM amazon/aws-cli:2.7.24" >> Dockerfile
         echo "" >> Dockerfile
+        echo "# Install Python and pip" >> Dockerfile
+        echo "RUN yum install -y python3 python3-pip" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Upgrade pip" >> Dockerfile
+        echo "RUN pip3 install --upgrade pip" >> Dockerfile
+        echo "" >> Dockerfile
         echo "# Install Python dependencies" >> Dockerfile
-        echo "RUN pip install --upgrade pip" >> Dockerfile
-        echo "RUN pip install boto3" >> Dockerfile
+        echo "RUN pip3 install boto3" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Copy your application code" >> Dockerfile
         echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
@@ -65,9 +70,9 @@ jobs:
         echo "RUN aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1 --auth-token \$auth_token" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Install ieg package from CodeArtifact" >> Dockerfile
-        echo "RUN pip install ieg --upgrade" >> Dockerfile
+        echo "RUN pip3 install ieg --upgrade" >> Dockerfile
         echo "" >> Dockerfile
-        echo "RUN echo 'python /app/cpcost.py' >> /assume-role.sh" >> Dockerfile
+        echo "RUN echo 'python3 /app/cpcost.py' >> /assume-role.sh" >> Dockerfile
         echo "RUN chmod +x /assume-role.sh" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Set the entrypoint to run the script" >> Dockerfile
