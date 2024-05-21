@@ -83,6 +83,13 @@ jobs:
           echo "# Set the entrypoint to run the script" >> Dockerfile
           echo "ENTRYPOINT [\"python\", \"/app/cpcost.py\"]" >> Dockerfile
           docker build -t cpcost .
-          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
-          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
-          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+          
+      - name: Push Docker image
+        env:
+          ECR_REGISTRY: 109667701036.dkr.ecr.us-east-1.amazonaws.com
+          ECR_REPOSITORY: cpcost-container
+          AWS_REGION: us-east-1
+        run: |
+          aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+          docker tag cpcost:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+          docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
