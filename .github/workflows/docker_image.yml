@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  Build-Push:
+  build-and-push:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -12,6 +12,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Checkout ieg-gitops-automation Repository
+        uses: actions/checkout@v2
+        with:
+          repository: amagimedia/ieg-gitops-automation
+          path: ieg-gitops-automation
+          ref: nodegroup_csv
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.7.0
@@ -58,6 +65,7 @@ jobs:
           AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
           PIP_INDEX_URL: ${{ env.PIP_INDEX_URL }}
         run: |
+          cp ieg-gitops-automation/ieg_lib_toolkit/ieg_cost/cpcost.py .
           docker build -t cpcost .
 
       - name: Push Docker image
