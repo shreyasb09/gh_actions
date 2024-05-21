@@ -1,4 +1,4 @@
-name: ECS
+name: pls work
 
 on:
   workflow_dispatch:
