@@ -27,10 +27,18 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Build and push Docker image
+    - name: Assume IAM role and build Docker image
       env:
         AWS_ROLE_ARN: arn:aws:iam::109667701036:role/cpcostiota-role
       run: |
+        # Assume the IAM role
+        assume_role_output=$(aws sts assume-role --role-arn $AWS_ROLE_ARN --role-session-name my-session)
+
+        # Set the temporary credentials as environment variables
+        export AWS_ACCESS_KEY_ID=$(echo "$assume_role_output" | jq -r '.Credentials.AccessKeyId')
+        export AWS_SECRET_ACCESS_KEY=$(echo "$assume_role_output" | jq -r '.Credentials.SecretAccessKey')
+        export AWS_SESSION_TOKEN=$(echo "$assume_role_output" | jq -r '.Credentials.SessionToken')
+
         # Build stage
         echo "FROM python:3.9" > Dockerfile
         echo "" >> Dockerfile
@@ -40,17 +48,6 @@ jobs:
         echo "" >> Dockerfile
         echo "# Set the AWS_DEFAULT_REGION environment variable" >> Dockerfile
         echo "ENV AWS_DEFAULT_REGION=ap-south-1" >> Dockerfile
-        echo "" >> Dockerfile
-        echo "# Set the AWS_ROLE_ARN environment variable" >> Dockerfile
-        echo "ENV AWS_ROLE_ARN=arn:aws:iam::109667701036:role/cpcostiota-role" >> Dockerfile
-        echo "" >> Dockerfile
-        echo "# Assume the IAM role" >> Dockerfile
-        echo "RUN aws sts assume-role --role-arn \$AWS_ROLE_ARN --role-session-name my-session > /tmp/assume-role-output.json" >> Dockerfile
-        echo "" >> Dockerfile
-        echo "# Set the temporary credentials from the assumed role" >> Dockerfile
-        echo "RUN export AWS_ACCESS_KEY_ID=\$(jq -r '.Credentials.AccessKeyId' /tmp/assume-role-output.json) && \\" >> Dockerfile
-        echo "    export AWS_SECRET_ACCESS_KEY=\$(jq -r '.Credentials.SecretAccessKey' /tmp/assume-role-output.json) && \\" >> Dockerfile
-        echo "    export AWS_SESSION_TOKEN=\$(jq -r '.Credentials.SessionToken' /tmp/assume-role-output.json)" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Get CodeArtifact authorization token" >> Dockerfile
         echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
@@ -71,6 +68,4 @@ jobs:
         echo "ENTRYPOINT [\"python\", \"/app/cpcost.py\"]" >> Dockerfile
 
         docker build -t cpcost .
-        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
-        docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
         docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
