@@ -1,6 +1,8 @@
 name: pls work on
+
 on:
   workflow_dispatch:
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -44,9 +46,11 @@ jobs:
           index-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
           extra-index-url = https://pypi.org/simple/
           EOF
+
       - name: Copy pipconf directory
         run: |
           cp -r ~/pipconf .
+
       - name: Build and push Docker image
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
@@ -54,36 +58,8 @@ jobs:
           AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
           PIP_INDEX_URL: ${{ env.PIP_INDEX_URL }}
         run: |
-          echo "FROM python:3.9" > Dockerfile
-          echo "" >> Dockerfile
-          echo "# Install AWS CLI" >> Dockerfile
-          echo "RUN apt-get update && \\" >> Dockerfile
-          echo " apt-get install -y awscli" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the AWS_DEFAULT_REGION environment variable" >> Dockerfile
-          echo "ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the AWS credentials environment variables" >> Dockerfile
-          echo "ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> Dockerfile
-          echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
-          echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the PIP_INDEX_URL environment variable" >> Dockerfile
-          echo "ENV PIP_INDEX_URL=${PIP_INDEX_URL}" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Copy the pip.conf file" >> Dockerfile
-          echo "COPY pipconf/pip.conf /root/.pip/pip.conf" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Install dependencies" >> Dockerfile
-          echo "RUN pip install ieg==0.1.0" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Copy your application code" >> Dockerfile
-          echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the entrypoint to run the script" >> Dockerfile
-          echo "ENTRYPOINT [\"python\", \"/app/cpcost.py\"]" >> Dockerfile
           docker build -t cpcost .
-          
+
       - name: Push Docker image
         env:
           ECR_REGISTRY: 109667701036.dkr.ecr.us-east-1.amazonaws.com
