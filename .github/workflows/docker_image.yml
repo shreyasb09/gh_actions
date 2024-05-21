@@ -35,6 +35,9 @@ jobs:
           export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain "${CODEARTIFACT_DOMAIN}" --domain-owner "${AWS_ACCOUNT_ID}" --query authorizationToken --output text)
           export PIP_INDEX_URL="https://aws:${CODEARTIFACT_AUTH_TOKEN}@${CODEARTIFACT_DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${AWS_DEFAULT_REGION}.amazonaws.com/pypi/${CODEARTIFACT_REPO}/simple/"
           
+          echo "Creating pip.conf directory..."
+          mkdir -p ~/.pip
+          
           echo "Creating pip.conf..."
           cat > ~/.pip/pip.conf << EOF
           [global]
