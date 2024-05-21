@@ -1,8 +1,6 @@
 name: pls work
-
 on:
   workflow_dispatch:
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -12,7 +10,7 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
-
+      
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1.7.0
       with:
@@ -21,17 +19,28 @@ jobs:
         role-session-name: my_repo
         role-duration-seconds: 900
       id: aws-credentials
-
+      
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-
+        
+    - name: Pre-build commands
+      env:
+        CODEARTIFACT_DOMAIN: amgbeta
+        AWS_ACCOUNT_ID: 109667701036
+        CODEARTIFACT_REPO: ieg
+      run: |
+        echo Getting CodeArtifact authorization...
+        export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain "${CODEARTIFACT_DOMAIN}" --domain-owner "${AWS_ACCOUNT_ID}" --query authorizationToken --output text)
+        export PIP_INDEX_URL="https://aws:${CODEARTIFACT_AUTH_TOKEN}@${CODEARTIFACT_DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${AWS_DEFAULT_REGION}.amazonaws.com/pypi/${CODEARTIFACT_REPO}/simple/"
+        
     - name: Build and push Docker image
       env:
         AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
         AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws_secret_access_key }}
         AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
+        PIP_INDEX_URL: ${{ env.PIP_INDEX_URL }}
       run: |
         # Build stage
         echo "FROM python:3.9" > Dockerfile
@@ -41,26 +50,15 @@ jobs:
         echo "    apt-get install -y awscli" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Set the AWS_DEFAULT_REGION environment variable" >> Dockerfile
-        echo "ENV AWS_DEFAULT_REGION=ap-south-1" >> Dockerfile
+        echo "ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Set the AWS credentials environment variables" >> Dockerfile
-        echo "ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> Dockerfile
-        echo "ENV AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> Dockerfile
-        echo "ENV AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> Dockerfile
+        echo "ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> Dockerfile
+        echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
+        echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
         echo "" >> Dockerfile
-        echo "# Configure AWS CLI" >> Dockerfile
-        echo "RUN aws configure set aws_access_key_id \$AWS_ACCESS_KEY_ID && \\" >> Dockerfile
-        echo "    aws configure set aws_secret_access_key \$AWS_SECRET_ACCESS_KEY && \\" >> Dockerfile
-        echo "    aws configure set aws_session_token \$AWS_SESSION_TOKEN" >> Dockerfile
-        echo "" >> Dockerfile
-        echo "# Get CodeArtifact authorization token" >> Dockerfile
-        echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
-        echo "" >> Dockerfile
-        echo "# Configure pip" >> Dockerfile
-        echo "RUN mkdir -p ~/.pip && \\" >> Dockerfile
-        echo "    echo \"[global]\" > ~/.pip/pip.conf && \\" >> Dockerfile
-        echo "    echo \"index-url = https://aws:\${auth_token}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/\" >> ~/.pip/pip.conf && \\" >> Dockerfile
-        echo "    echo \"extra-index-url = https://pypi.org/simple/\" >> ~/.pip/pip.conf" >> Dockerfile
+        echo "# Set the PIP_INDEX_URL environment variable" >> Dockerfile
+        echo "ENV PIP_INDEX_URL=${PIP_INDEX_URL}" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Install dependencies" >> Dockerfile
         echo "RUN pip install ieg==0.1.0" >> Dockerfile
@@ -70,7 +68,7 @@ jobs:
         echo "" >> Dockerfile
         echo "# Set the entrypoint to run the script" >> Dockerfile
         echo "ENTRYPOINT [\"python\", \"/app/cpcost.py\"]" >> Dockerfile
-
+        
         docker build -t cpcost .
         aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
         docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
