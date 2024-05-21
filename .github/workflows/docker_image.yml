@@ -1,8 +1,10 @@
 name: pls work on
 on:
   workflow_dispatch:
+
 jobs:
-  build-and-push:
+
+  build:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -10,15 +12,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          aws-region: ap-south-1
-          role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
-          role-session-name: my_repo
-          role-duration-seconds: 900
-        id: aws-credentials
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
@@ -49,11 +42,9 @@ jobs:
         run: |
           cp -r ~/pipconf .
 
-      - name: Build and push Docker image
+
+      - name: Build Docker image
         env:
-          AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws_secret_access_key }}
-          AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
           PIP_INDEX_URL: ${{ env.PIP_INDEX_URL }}
         run: |
           echo "FROM python:3.9" > Dockerfile
@@ -61,14 +52,6 @@ jobs:
           echo "# Install AWS CLI" >> Dockerfile
           echo "RUN apt-get update && \\" >> Dockerfile
           echo " apt-get install -y awscli" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the AWS_DEFAULT_REGION environment variable" >> Dockerfile
-          echo "ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the AWS credentials environment variables" >> Dockerfile
-          echo "ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> Dockerfile
-          echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
-          echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Set the PIP_INDEX_URL environment variable" >> Dockerfile
           echo "ENV PIP_INDEX_URL=${PIP_INDEX_URL}" >> Dockerfile
@@ -85,6 +68,52 @@ jobs:
           echo "# Set the entrypoint to run the script" >> Dockerfile
           echo "ENTRYPOINT [\"python\", \"/app/cpcost.py\"]" >> Dockerfile
           docker build -t cpcost .
-          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
-          docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
-          docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: Dockerfile
+
+  push-to-ecr:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ap-south-1
+          role-to-assume: arn:aws:iam::109667701036:role/cpcostiota-role
+          role-session-name: my_repo
+          role-duration-seconds: 900
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Load Docker image
+        run: |
+          docker load -i docker-image/Dockerfile
+
+      - name: Push to ECR
+        env:
+          ECR_REGISTRY: 109667701036.dkr.ecr.ap-south-1.amazonaws.com
+          ECR_REPOSITORY: cpcost
+          CONTAINER_NAME: cpcost-container
+        run: |
+          docker tag cpcost $ECR_REGISTRY/$ECR_REPOSITORY:$CONTAINER_NAME
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$CONTAINER_NAME
+          
+          # Push with 'latest' tag as well
+          docker tag cpcost $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
