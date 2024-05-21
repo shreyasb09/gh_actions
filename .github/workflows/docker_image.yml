@@ -45,6 +45,10 @@ jobs:
           extra-index-url = https://pypi.org/simple/
           EOF
 
+      - name: Copy pipconf directory
+        run: |
+          cp -r ~/pipconf .
+
       - name: Build and push Docker image
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
