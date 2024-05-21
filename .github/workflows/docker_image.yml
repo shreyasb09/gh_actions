@@ -27,23 +27,11 @@ jobs:
       with:
         python-version: 3.9
         
-    - name: Pre-build commands
-      env:
-        CODEARTIFACT_DOMAIN: amgbeta
-        AWS_ACCOUNT_ID: 109667701036
-        CODEARTIFACT_REPO: ieg
-      run: |
-        echo Getting CodeArtifact authorization...
-        export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain "${CODEARTIFACT_DOMAIN}" --domain-owner "${AWS_ACCOUNT_ID}" --query authorizationToken --output text)
-        export PIP_INDEX_URL="https://aws:${CODEARTIFACT_AUTH_TOKEN}@${CODEARTIFACT_DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${AWS_DEFAULT_REGION}.amazonaws.com/pypi/${CODEARTIFACT_REPO}/simple/"
-        
     - name: Build and push Docker image
       env:
         AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
         AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws_secret_access_key }}
         AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
-        PIP_INDEX_URL: ${{ env.PIP_INDEX_URL }}
-        CODEARTIFACT_AUTH_TOKEN: ${{ env.CODEARTIFACT_AUTH_TOKEN }}
       run: |
         # Build stage
         echo "FROM python:3.9" > Dockerfile
@@ -60,12 +48,11 @@ jobs:
         echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
         echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
         echo "" >> Dockerfile
-        echo "# Set the PIP_INDEX_URL environment variable" >> Dockerfile
-        echo "ENV PIP_INDEX_URL=${PIP_INDEX_URL}" >> Dockerfile
-        echo "" >> Dockerfile
         echo "# Log in to AWS CodeArtifact" >> Dockerfile
-        echo "RUN mkdir -p ~/.pip" >> Dockerfile
-        echo "RUN echo \"[global]\\nindex-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/\\nextra-index-url = https://pypi.org/simple/\" > ~/.pip/pip.conf" >> Dockerfile
+        echo "RUN aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Configure pip to use the CodeArtifact repository" >> Dockerfile
+        echo "RUN pip config set global.index-url https://aws:@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Install dependencies" >> Dockerfile
         echo "RUN pip install ieg==0.1.0" >> Dockerfile
