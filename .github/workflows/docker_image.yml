@@ -48,9 +48,17 @@ jobs:
         echo "RUN aws configure set role_arn \$AWS_ROLE_ARN && \\" >> Dockerfile
         echo "    aws configure set source_profile default" >> Dockerfile
         echo "" >> Dockerfile
-        echo "# Install pip and configure CodeArtifact" >> Dockerfile
-        echo "RUN pip install --upgrade pip && \\" >> Dockerfile
-        echo "    aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036" >> Dockerfile
+        echo "# Log in to AWS CodeArtifact and configure pip" >> Dockerfile
+        echo "RUN mkdir -p ~/.pip && \\" >> Dockerfile
+        echo "    aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1 && \\" >> Dockerfile
+        echo "    cat > ~/.pip/pip.conf << EOF" >> Dockerfile
+        echo "[global]" >> Dockerfile
+        echo "index-url = https://aws:\${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/" >> Dockerfile
+        echo "extra-index-url = https://pypi.org/simple/" >> Dockerfile
+        echo "EOF" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Install dependencies" >> Dockerfile
+        echo "RUN pip install ieg==0.1.0" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Copy your application code" >> Dockerfile
         echo "COPY cpcost.py /app/cpcost.py" >> Dockerfile
