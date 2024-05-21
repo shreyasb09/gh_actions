@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Ecs
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
         echo "FROM amazon/aws-cli:2.7.24" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Install Python and pip" >> Dockerfile
-        echo "RUN apt-get update && apt-get install -y python3 python3-pip" >> Dockerfile
+        echo "RUN yum update -y && yum install -y python3 python3-pip" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Upgrade pip" >> Dockerfile
         echo "RUN pip3 install --upgrade pip" >> Dockerfile
