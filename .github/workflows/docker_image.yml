@@ -27,18 +27,8 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Assume IAM role and build Docker image
-      env:
-        AWS_ROLE_ARN: arn:aws:iam::109667701036:role/cpcostiota-role
+    - name: Build and push Docker image
       run: |
-        # Assume the IAM role
-        assume_role_output=$(aws sts assume-role --role-arn $AWS_ROLE_ARN --role-session-name my-session)
-
-        # Set the temporary credentials as environment variables
-        export AWS_ACCESS_KEY_ID=$(echo "$assume_role_output" | jq -r '.Credentials.AccessKeyId')
-        export AWS_SECRET_ACCESS_KEY=$(echo "$assume_role_output" | jq -r '.Credentials.SecretAccessKey')
-        export AWS_SESSION_TOKEN=$(echo "$assume_role_output" | jq -r '.Credentials.SessionToken')
-
         # Build stage
         echo "FROM python:3.9" > Dockerfile
         echo "" >> Dockerfile
@@ -68,4 +58,6 @@ jobs:
         echo "ENTRYPOINT [\"python\", \"/app/cpcost.py\"]" >> Dockerfile
 
         docker build -t cpcost .
-        docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
+        docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
+        docker push
