@@ -28,6 +28,10 @@ jobs:
         python-version: 3.9
 
     - name: Build and push Docker image
+      env:
+        AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws_secret_access_key }}
+        AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
       run: |
         # Build stage
         echo "FROM python:3.9" > Dockerfile
@@ -38,6 +42,16 @@ jobs:
         echo "" >> Dockerfile
         echo "# Set the AWS_DEFAULT_REGION environment variable" >> Dockerfile
         echo "ENV AWS_DEFAULT_REGION=ap-south-1" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Set the AWS credentials environment variables" >> Dockerfile
+        echo "ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> Dockerfile
+        echo "ENV AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> Dockerfile
+        echo "ENV AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Configure AWS CLI" >> Dockerfile
+        echo "RUN aws configure set aws_access_key_id \$AWS_ACCESS_KEY_ID && \\" >> Dockerfile
+        echo "    aws configure set aws_secret_access_key \$AWS_SECRET_ACCESS_KEY && \\" >> Dockerfile
+        echo "    aws configure set aws_session_token \$AWS_SESSION_TOKEN" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Get CodeArtifact authorization token" >> Dockerfile
         echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
@@ -60,4 +74,4 @@ jobs:
         docker build -t cpcost .
         aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
         docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
-        docker push
+        docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
