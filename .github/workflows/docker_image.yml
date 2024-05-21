@@ -48,14 +48,14 @@ jobs:
         echo "RUN aws configure set role_arn \$AWS_ROLE_ARN && \\" >> Dockerfile
         echo "    aws configure set source_profile default" >> Dockerfile
         echo "" >> Dockerfile
-        echo "# Log in to AWS CodeArtifact and configure pip" >> Dockerfile
+        echo "# Get CodeArtifact authorization token" >> Dockerfile
+        echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Configure pip" >> Dockerfile
         echo "RUN mkdir -p ~/.pip && \\" >> Dockerfile
-        echo "    aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1 && \\" >> Dockerfile
-        echo "    cat > ~/.pip/pip.conf <<EOF" >> Dockerfile
-        echo "[global]" >> Dockerfile
-        echo "index-url = https://aws:\${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/" >> Dockerfile
-        echo "extra-index-url = https://pypi.org/simple/" >> Dockerfile
-        echo "EOF" >> Dockerfile
+        echo "    echo \"[global]\" > ~/.pip/pip.conf && \\" >> Dockerfile
+        echo "    echo \"index-url = https://aws:\${auth_token}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/\" >> ~/.pip/pip.conf && \\" >> Dockerfile
+        echo "    echo \"extra-index-url = https://pypi.org/simple/\" >> ~/.pip/pip.conf" >> Dockerfile
         echo "" >> Dockerfile
         echo "# Install dependencies" >> Dockerfile
         echo "RUN pip install ieg==0.1.0" >> Dockerfile
@@ -69,4 +69,4 @@ jobs:
         docker build -t cpcost .
         aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 109667701036.dkr.ecr.ap-south-1.amazonaws.com
         docker tag cpcost:latest 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
-        docker push 109667701036.dkr.ecr.a
+        docker push 109667701036.dkr.ecr.ap-south-1.amazonaws.com/cpcost:latest
