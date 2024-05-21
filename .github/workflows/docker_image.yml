@@ -1,4 +1,4 @@
-name: ECS
+name: pls work
 
 on:
   workflow_dispatch:
@@ -59,6 +59,14 @@ jobs:
         echo "RUN echo 'export AWS_ACCESS_KEY_ID=\$(echo \"\$temp_creds\" | awk \"{print \$1}\")' >> /assume-role.sh" >> Dockerfile
         echo "RUN echo 'export AWS_SECRET_ACCESS_KEY=\$(echo \"\$temp_creds\" | awk \"{print \$2}\")' >> /assume-role.sh" >> Dockerfile
         echo "RUN echo 'export AWS_SESSION_TOKEN=\$(echo \"\$temp_creds\" | awk \"{print \$3}\")' >> /assume-role.sh" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Log in to AWS CodeArtifact" >> Dockerfile
+        echo "RUN auth_token=\$(aws codeartifact get-authorization-token --domain amgbeta --domain-owner 109667701036 --query authorizationToken --output text)" >> Dockerfile
+        echo "RUN aws codeartifact login --tool pip --repository ieg --domain amgbeta --domain-owner 109667701036 --region ap-south-1 --auth-token \$auth_token" >> Dockerfile
+        echo "" >> Dockerfile
+        echo "# Install ieg package from CodeArtifact" >> Dockerfile
+        echo "RUN pip install ieg --upgrade" >> Dockerfile
+        echo "" >> Dockerfile
         echo "RUN echo 'python /app/cpcost.py' >> /assume-role.sh" >> Dockerfile
         echo "RUN chmod +x /assume-role.sh" >> Dockerfile
         echo "" >> Dockerfile
