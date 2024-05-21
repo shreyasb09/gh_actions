@@ -35,19 +35,22 @@ jobs:
           export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain "${CODEARTIFACT_DOMAIN}" --domain-owner "${AWS_ACCOUNT_ID}" --query authorizationToken --output text)
           export PIP_INDEX_URL="https://aws:${CODEARTIFACT_AUTH_TOKEN}@${CODEARTIFACT_DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${AWS_DEFAULT_REGION}.amazonaws.com/pypi/${CODEARTIFACT_REPO}/simple/"
           
-          echo "Logging in to AWS CodeArtifact..."
-          mkdir -p ~/.pip
-          echo "[global]
+          echo "Creating pip.conf..."
+          cat > ~/.pip/pip.conf << EOF
+          [global]
           index-url = https://aws:${CODEARTIFACT_AUTH_TOKEN}@amgbeta-109667701036.d.codeartifact.ap-south-1.amazonaws.com/pypi/ieg/simple/
-          extra-index-url = https://pypi.org/simple/" > ~/.pip/pip.conf
+          extra-index-url = https://pypi.org/simple/
+          EOF
+
+      - name: Install dependencies
+        run: |
+          pip install ieg==0.1.0
 
       - name: Build and push Docker image
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws_secret_access_key }}
           AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws_session_token }}
-          PIP_INDEX_URL: ${{ env.PIP_INDEX_URL }}
-          CODEARTIFACT_AUTH_TOKEN: ${{ env.CODEARTIFACT_AUTH_TOKEN }}
         run: |
           echo "FROM python:3.9" > Dockerfile
           echo "" >> Dockerfile
@@ -62,9 +65,6 @@ jobs:
           echo "ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> Dockerfile
           echo "ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> Dockerfile
           echo "ENV AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> Dockerfile
-          echo "" >> Dockerfile
-          echo "# Set the PIP_INDEX_URL environment variable" >> Dockerfile
-          echo "ENV PIP_INDEX_URL=${PIP_INDEX_URL}" >> Dockerfile
           echo "" >> Dockerfile
           echo "# Install dependencies" >> Dockerfile
           echo "RUN pip install ieg==0.1.0" >> Dockerfile
