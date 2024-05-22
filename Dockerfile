@@ -2,7 +2,7 @@ FROM python:3.9
 
 # Install AWS CLI
 RUN apt-get update && \
- apt-get install -y awscli
+    apt install -y awscli
 
 # Set the AWS_DEFAULT_REGION environment variable
 ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
@@ -19,10 +19,11 @@ ENV PIP_INDEX_URL=${PIP_INDEX_URL}
 COPY pipconf/pip.conf /root/.pip/pip.conf
 
 # Install dependencies
-RUN pip install ieg==0.1.0
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy your application code
 COPY cpcost.py /app/cpcost.py
 
-# Set the entrypoint to run the script
-ENTRYPOINT ["python", "/app/cpcost.py"]
+# Run the Python script in the background
+CMD python /app/cpcost.py
